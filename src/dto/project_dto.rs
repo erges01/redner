@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::models::{
     asset::Asset,
@@ -11,4 +11,9 @@ pub struct ProjectEditorResponse {
     pub project: Project,
     pub assets: Vec<Asset>,
     pub timeline: TimelineDocument,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CreateProjectRequest {
+    pub name: String,
 }

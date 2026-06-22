@@ -1,12 +1,12 @@
 use axum::{
-    routing::{get, put},
+    routing::{get, post},
     Router,
 };
 
 use crate::{
     api::{
         health::health_check,
-        projects::get_project_editor,
+        projects::{create_project, get_project_editor},
         timelines::{get_timeline, save_timeline},
     },
     app::state::AppState,
@@ -15,6 +15,11 @@ use crate::{
 pub fn create_router(state: AppState) -> Router {
     Router::new()
         .route("/api/health", get(health_check))
+        // Added the .post() route here!
+        .route(
+            "/api/projects",
+            post(create_project)
+        )
         .route("/api/projects/:project_id/editor", get(get_project_editor))
         .route(
             "/api/projects/:project_id/timeline",

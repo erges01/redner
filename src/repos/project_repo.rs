@@ -30,4 +30,22 @@ impl ProjectRepo {
 
         Ok(project)
     }
+
+    pub async fn create(&self, name: &str) -> Result<Project, AppError> {
+        let new_id = Uuid::new_v4();
+        
+        let project = sqlx::query_as::<_, Project>(
+            r#"
+            INSERT INTO projects (id, name, created_at, updated_at)
+            VALUES ($1, $2, NOW(), NOW())
+            RETURNING id, name, description, created_at, updated_at
+            "#
+        )
+        .bind(new_id)
+        .bind(name)
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(project)
+    }
 }

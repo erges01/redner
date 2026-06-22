@@ -3,6 +3,7 @@ use uuid::Uuid;
 use crate::{
     dto::project_dto::ProjectEditorResponse,
     error::app_error::AppError,
+    models::project::Project,
     repos::{asset_repo::AssetRepo, project_repo::ProjectRepo},
     services::timeline_service::TimelineService,
 };
@@ -45,5 +46,10 @@ impl ProjectService {
             assets,
             timeline,
         })
+    }
+
+    // --- NEW METHOD ---
+    pub async fn create_project(&self, name: &str) -> Result<Project, AppError> {
+        self.project_repo.create(name).await
     }
 }

@@ -4,6 +4,7 @@ use axum::{
 };
 
 use crate::{
+    ai::router::ai_routes, // <-- New AI router import
     api::{
         health::health_check,
         projects::{create_project, get_project_editor},
@@ -25,5 +26,7 @@ pub fn create_router(state: AppState) -> Router {
             "/api/projects/:project_id/timeline",
             get(get_timeline).put(save_timeline),
         )
+        // Cleanly mount all AI endpoints under /api/ai
+        .nest("/api/ai", ai_routes())
         .with_state(state)
 }

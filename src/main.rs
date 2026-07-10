@@ -6,11 +6,16 @@ mod error;
 mod models;
 mod repos;
 mod services;
+mod ai; 
 
 use std::{env, net::SocketAddr, sync::Arc};
 
 use dotenvy::dotenv;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+// --- 🛠️ NEW: CORS Imports ---
+use axum::http::{Method, header::{ACCEPT, CONTENT_TYPE}};
+use tower_http::cors::{Any, CorsLayer};
 
 use crate::{
     app::{router::create_router, state::AppState},
@@ -65,8 +70,14 @@ async fn main() -> anyhow::Result<()> {
         timeline_service: Arc::new(timeline_service),
     };
 
-    // Create Router
-    let app = create_router(state);
+    // --- 🛠️ NEW: Configure CORS ---
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::OPTIONS])
+        .allow_headers([CONTENT_TYPE, ACCEPT]);
+
+    // Create Router and attach the CORS layer
+    let app = create_router(state).layer(cors);
 
     // Start Server
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));

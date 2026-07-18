@@ -4,13 +4,14 @@ use axum::{
 };
 
 use crate::{
-    ai::router::ai_routes, // <-- New AI router import
+    ai::router::ai_routes, // <-- Existing AI router import
     api::{
         health::health_check,
         projects::{create_project, get_project_editor},
         timelines::{get_timeline, save_timeline},
     },
     app::state::AppState,
+    performance::api::performance_routes, // <-- 🛠️ NEW: Import performance routes
 };
 
 pub fn create_router(state: AppState) -> Router {
@@ -28,5 +29,7 @@ pub fn create_router(state: AppState) -> Router {
         )
         // Cleanly mount all AI endpoints under /api/ai
         .nest("/api/ai", ai_routes())
+        // 🛠️ NEW: Cleanly mount all Performance Engine endpoints under /api/performance
+        .nest("/api/performance", performance_routes())
         .with_state(state)
 }

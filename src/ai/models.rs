@@ -4,6 +4,13 @@ use serde::{Deserialize, Serialize};
 // 1. INCOMING CONTEXT (From Frontend)
 // ==========================================
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ChatMessage {
+    pub role: String, // "user" or "model"
+    pub text: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AIClipSnapshot {
@@ -55,8 +62,10 @@ pub struct AIContextSnapshot {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CopilotRequest {
     pub prompt: String,
+    pub history: Vec<ChatMessage>, // Block D: Conversation tracking added
     pub context: AIContextSnapshot,
 }
 
@@ -71,8 +80,12 @@ pub enum AIOperation {
     Seek { #[serde(rename = "timeMs")] time_ms: f64 },
     DeleteClip { #[serde(rename = "clipId")] clip_id: String },
     SplitClip { #[serde(rename = "clipId")] clip_id: String, #[serde(rename = "timeMs")] time_ms: f64 },
+    
+    // 🛠️ NEW EXPANSION PACK
+    MoveClip { #[serde(rename = "clipId")] clip_id: String, #[serde(rename = "newStartMs")] new_start_ms: f64 },
+    DuplicateClip { #[serde(rename = "clipId")] clip_id: String },
+    CreateMarker { #[serde(rename = "timeMs")] time_ms: f64, label: String },
 }
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AIResponsePayload {
     pub thoughts: String,

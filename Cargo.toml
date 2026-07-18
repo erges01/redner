@@ -25,3 +25,4 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 dotenvy = "0.15"
 anyhow = "1.0.102"
 reqwest = { version = "0.13.4", features = ["json"] }
+async-trait = "0.1.89"

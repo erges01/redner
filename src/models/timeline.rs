@@ -34,6 +34,7 @@ pub enum TrackType {
     Caption,
     Avatar,
     Overlay,
+    Performance, // 👈 NEW: Director Track
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,6 +49,7 @@ pub struct Clip {
     pub label: Option<String>,
     pub color: Option<String>,
     pub content: Option<ClipContent>,
+    pub metadata: Option<serde_json::Value>, // 👈 NEW: Catch the Performance JSON payload
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -61,6 +63,7 @@ pub enum ClipType {
     Caption,
     AvatarSegment,
     Gap,
+    PerformanceInstruction, // 👈 NEW: Serializes to "performance_instruction"
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

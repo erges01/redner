@@ -6,7 +6,9 @@ mod error;
 mod models;
 mod repos;
 mod services;
-mod ai; 
+mod ai;
+pub mod performance;
+pub mod runtime;
 
 use std::{env, net::SocketAddr, sync::Arc};
 
@@ -84,6 +86,9 @@ async fn main() -> anyhow::Result<()> {
     let listener = tokio::net::TcpListener::bind(addr).await?;
 
     tracing::info!("🚀 Redner Backend listening on http://{}", addr);
+
+    // ADD THIS LINE TO RUN THE DEMO IN THE BACKGROUND
+    tokio::spawn(crate::runtime::demo::run_graph_demo());
 
     axum::serve(listener, app).await?;
 

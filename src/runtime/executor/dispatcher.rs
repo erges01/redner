@@ -38,6 +38,8 @@ impl GraphDispatcher {
                     
                     if all_done {
                         println!("✅ Dispatcher: Graph execution finished completely!");
+                        // Must drop lock before async background sync
+                        drop(g);
                         self.sync_db(job_id, JobStatus::Completed, &graph).await;
                         break;
                     }
@@ -80,6 +82,7 @@ impl GraphDispatcher {
                             let mut g = graph.lock().await;
                             g.update_node_status(&node_id, NodeStatus::Failed(e.clone()));
                             println!("🔴 Node [{}] Failed: {}", node_id, e);
+                            drop(g); // Drop before sync
                             self.sync_db(job_id, JobStatus::Failed(e.clone()), &graph).await;
                             return Err(format!("Graph aborted due to failure in {}: {}", node_id, e));
                         }
@@ -90,8 +93,11 @@ impl GraphDispatcher {
 
                 } else {
                     let err_msg = format!("No runner registered for {:?}", node.node_type);
+                    println!("❌ CRITICAL ERROR: {}", err_msg);
+                    
                     let mut g = graph.lock().await;
                     g.update_node_status(&node_id, NodeStatus::Failed(err_msg.clone()));
+                    drop(g); // Drop before sync
                     self.sync_db(job_id, JobStatus::Failed(err_msg.clone()), &graph).await;
                     return Err(err_msg);
                 }
@@ -101,13 +107,24 @@ impl GraphDispatcher {
         Ok(())
     }
 
-    /// Helper to cleanly sync state to DB if a store is provided
+    /// Helper to cleanly sync state to DB in a non-blocking background thread
     async fn sync_db(&self, job_id: Option<Uuid>, status: JobStatus, graph_arc: &Arc<Mutex<RuntimeGraph>>) {
         if let (Some(store), Some(id)) = (&self.store, job_id) {
-            let graph = graph_arc.lock().await;
-            if let Err(e) = store.update_job_state(id, &status, &graph).await {
-                println!("⚠️ DB Sync Error for Job {}: {}", id, e);
-            }
+            // 1. Lock briefly just to clone the current state of the graph
+            let graph_clone = {
+                let g = graph_arc.lock().await;
+                g.clone()
+            };
+
+            // 2. Clone the store to move it into the background thread
+            let store_clone = store.clone();
+
+            // 3. Fire and forget! Send the DB update to a background thread so the dispatcher never waits
+            tokio::spawn(async move {
+                if let Err(e) = store_clone.update_job_state(id, &status, &graph_clone).await {
+                    println!("⚠️ DB Sync Error for Job {}: {}", id, e);
+                }
+            });
         }
     }
 }

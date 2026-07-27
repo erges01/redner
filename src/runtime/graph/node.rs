@@ -19,6 +19,8 @@ pub enum NodeType {
     Narration,
     Voice,
     LipSync,
+    Scene,
+    Composition,
     AvatarAnimation,
     SceneComposition,
     Caption,

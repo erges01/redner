@@ -1,2 +1,8 @@
 pub mod voice;
 pub mod elevenlabs;
+pub mod lipsync; 
+pub mod rhubarb;
+pub mod scene;
+pub mod mock_scene;
+pub mod composition;
+pub mod local_composition;

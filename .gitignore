@@ -1,3 +1,15 @@
 .env
 target/
 .DS_Store
+
+# Ignore heavy binaries and executables
+*.exe
+res/
+ffmpeg/
+rhubarb/
+
+# Ignore generated audio/video temp files
+temp/
+*.mp3
+*.wav
+*.mp4

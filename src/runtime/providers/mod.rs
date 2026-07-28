@@ -6,3 +6,5 @@ pub mod scene;
 pub mod mock_scene;
 pub mod composition;
 pub mod local_composition;
+pub mod render;
+pub mod local_render;

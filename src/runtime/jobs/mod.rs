@@ -5,3 +5,4 @@ pub mod voice;
 pub mod lipsync;
 pub mod scene;
 pub mod composition;
+pub mod render;

@@ -9,6 +9,7 @@ mod services;
 mod ai;
 pub mod performance;
 pub mod runtime;
+pub mod platform;
 
 use std::{env, net::SocketAddr, sync::Arc};
 
@@ -81,15 +82,17 @@ async fn main() -> anyhow::Result<()> {
     // Create Router and attach the CORS layer
     let app = create_router(state).layer(cors);
 
-    // Start Server
+   // Start Server
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     let listener = tokio::net::TcpListener::bind(addr).await?;
 
     tracing::info!("🚀 Redner Backend listening on http://{}", addr);
 
-    // ADD THIS LINE TO RUN THE DEMO IN THE BACKGROUND
+    // Run your demos in the background (DO THIS BEFORE AXUM::SERVE)
     tokio::spawn(crate::runtime::demo::run_graph_demo());
+    tokio::spawn(crate::platform::plugin::demo::run_wasm_demo());
 
+    // Start the server (this blocks forever, so it MUST be the very last thing)
     axum::serve(listener, app).await?;
 
     Ok(())

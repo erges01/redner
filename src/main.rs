@@ -10,6 +10,7 @@ mod ai;
 pub mod performance;
 pub mod runtime;
 pub mod platform;
+pub mod cloud; // 👈 1. Declare the new Cloud domain!
 
 use std::{env, net::SocketAddr, sync::Arc};
 
@@ -22,6 +23,7 @@ use tower_http::cors::{Any, CorsLayer};
 
 use crate::{
     app::{router::create_router, state::AppState},
+    cloud::api::build_cloud_router, // 👈 2. Import the Cloud Master Router
     db::pool::create_pool,
     repos::{
         asset_repo::AssetRepo,
@@ -79,8 +81,10 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::OPTIONS])
         .allow_headers([CONTENT_TYPE, ACCEPT]);
 
-    // Create Router and attach the CORS layer
-    let app = create_router(state).layer(cors);
+    // Create Router, MERGE the cloud router, and attach the CORS layer
+    let app = create_router(state)
+        .merge(build_cloud_router()) // 👈 3. Mount the Phase 8 APIs!
+        .layer(cors);
 
    // Start Server
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));

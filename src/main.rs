@@ -10,7 +10,8 @@ mod ai;
 pub mod performance;
 pub mod runtime;
 pub mod platform;
-pub mod cloud; // 👈 1. Declare the new Cloud domain!
+pub mod cloud;
+pub mod agents; 
 
 use std::{env, net::SocketAddr, sync::Arc};
 

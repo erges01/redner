@@ -1,19 +1,44 @@
-use axum::{Json, extract::State};
+use axum::{
+    async_trait,
+    extract::FromRequestParts,
+    http::request::Parts,
+    Json,
+};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-
-// Note: This assumes you have some form of user extractor in your Axum app
-// (Even if it just reads a token from Supabase/Clerk on the frontend)
-use crate::cloud::auth::AuthenticatedCreator;
+use std::convert::Infallible;
 
 // ==========================================
-// 1. THE DATA MODELS (DELIVERABLE 2)
+// 1. THE MOCK AUTH EXTRACTOR 
+// (Bypasses auth until Next.js is built)
+// ==========================================
+#[derive(Debug, Clone)]
+pub struct AuthenticatedCreator {
+    pub creator_id: Uuid,
+    pub username: String,
+}
+
+#[async_trait]
+impl<S: Send + Sync> FromRequestParts<S> for AuthenticatedCreator {
+    type Rejection = Infallible;
+
+    async fn from_request_parts(_parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        // Automatically acts as if you are logged in
+        Ok(AuthenticatedCreator {
+            creator_id: Uuid::new_v4(),
+            username: "Adesope".to_string(), 
+        })
+    }
+}
+
+// ==========================================
+// 2. THE DATA MODELS
 // ==========================================
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WorkspacePreferences {
     pub theme: String,
-    pub shortcuts_profile: String, // e.g., "premiere", "resolve", "custom"
+    pub shortcuts_profile: String, 
     pub auto_save_interval_secs: u32,
 }
 
@@ -34,17 +59,15 @@ pub struct CreatorProfile {
 }
 
 // ==========================================
-// 2. CLOUD SETTINGS SERVICE (DELIVERABLE 3)
+// 3. CLOUD SETTINGS SERVICE
 // ==========================================
 
 /// GET /cloud/identity/profile
-/// Fetches the creator's global settings the moment they log in on a new device.
 pub async fn get_creator_profile(
     user: AuthenticatedCreator, 
 ) -> Json<CreatorProfile> {
     println!("☁️ [IDENTITY] Fetching cloud settings for Creator: {}", user.username);
     
-    // In production, we query the Postgres `creator_profiles` table here using the user.creator_id
     let profile = CreatorProfile {
         creator_id: user.creator_id,
         display_name: user.username.clone(),
@@ -65,14 +88,10 @@ pub async fn get_creator_profile(
 }
 
 /// PUT /cloud/identity/settings
-/// Synchronizes local preferences back to the cloud.
 pub async fn sync_creator_settings(
     user: AuthenticatedCreator,
-    Json(new_settings): Json<CreatorSettings>,
+    Json(_new_settings): Json<CreatorSettings>,
 ) -> Json<&'static str> {
     println!("☁️ [IDENTITY] Synchronizing new settings to the cloud for {}", user.username);
-    
-    // UPSERT into Postgres database goes here.
-    
     Json("Settings synchronized successfully!")
 }

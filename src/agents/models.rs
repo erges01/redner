@@ -10,7 +10,7 @@ pub enum AgentStatus {
     Idle,
     Planning,
     Executing,
-    Waiting,    // E.g., waiting for human approval or another agent
+    WaitingForHuman,// E.g., waiting for human approval or another agent
     Reviewing,
     Completed,
     Error(String),
@@ -19,17 +19,16 @@ pub enum AgentStatus {
 // ==========================================
 // 2. THE SPECIALIST ROLES
 // ==========================================
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub enum AgentRole {
-    CreativeDirector, // Orchestrator
+    CreativeDirector,
     ScriptSpecialist,
     VisualSpecialist,
     VoiceSpecialist,
     PerformanceSpecialist,
-    Editor,           // Executes timeline mutations
-    Reviewer,         // QA and Critique
+    Editor,
+    Reviewer,
 }
-
 // ==========================================
 // 3. THE AGENT DEFINITION
 // ==========================================

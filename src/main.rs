@@ -12,6 +12,7 @@ pub mod runtime;
 pub mod platform;
 pub mod cloud;
 pub mod agents; 
+pub mod live;
 
 use std::{env, net::SocketAddr, sync::Arc};
 

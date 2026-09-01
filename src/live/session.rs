@@ -1,42 +1,47 @@
 use uuid::Uuid;
 use crate::live::events::{LiveEvent, LiveSignal};
-use crate::live::audio::TranscriptTimeline;
-use crate::live::motion::MotionTimeline; // 👈 Import the motion ledger!
+use crate::live::performance::CreatorPerformance;
+use crate::live::assistant::LiveAssistant; // 👈 Import the Assistant!
 
 pub struct LiveSessionManager {
-    pub transcript: TranscriptTimeline,
-    pub motion: MotionTimeline, // 👈 Add it to the session state
+    pub performance: CreatorPerformance,
 }
 
 impl LiveSessionManager {
     pub fn new(session_id: Uuid) -> Self {
         Self {
-            transcript: TranscriptTimeline::new(session_id),
-            motion: MotionTimeline::new(session_id), // 👈 Initialize it
+            performance: CreatorPerformance::new(session_id),
         }
     }
 
-    /// Ingests a high-frequency event from the React frontend
     pub fn process_incoming_signal(&mut self, event: LiveEvent) {
         match event.signal {
             LiveSignal::SessionStarted => {
-                println!("🔴 [LIVE] Creator {} started recording in Project {}.", event.creator_id, event.project_id);
+                println!("🔴 [LIVE] Creator {} started recording.", event.creator_id);
             },
             LiveSignal::AudioChunkReceived { chunk_index, byte_size } => {
-                println!("🔉 [LIVE] Received Audio Chunk #{} ({} bytes) at {}ms", chunk_index, byte_size, event.session_timestamp_ms);
+                // Audio streaming...
             },
             LiveSignal::VideoChunkReceived { chunk_index, byte_size } => {
-                println!("🎥 [LIVE] Received Video Chunk #{} ({} bytes) at {}ms", chunk_index, byte_size, event.session_timestamp_ms);
+                // Video streaming...
             },
             LiveSignal::SpeechDetected { text, start_ms, end_ms } => {
-                self.transcript.append_speech(text, start_ms as u64, end_ms as u64);
+                // 1. Check for silence between the last word and this new word
+                if let Some(last_speech) = self.performance.transcript.segments.last() {
+                    LiveAssistant::analyze_silence(last_speech.end_ms, start_ms as u64, &mut self.performance);
+                }
+
+                // 2. Check the text for verbal cues and topics
+                LiveAssistant::analyze_speech(&text, start_ms as u64, &mut self.performance);
+
+                // 3. Finally, save the transcript
+                self.performance.transcript.append_speech(text, start_ms as u64, end_ms as u64);
             },
             LiveSignal::ExpressionDetected { expression, confidence } => {
-                // 🛑 NEW: Append the facial expression directly to the motion ledger!
-                self.motion.append_expression(event.session_timestamp_ms, expression, confidence);
+                self.performance.motion.append_expression(event.session_timestamp_ms, expression, confidence);
             },
             LiveSignal::SessionEnded => {
-                println!("⏹️ [LIVE] Recording stopped. Finalizing assets...");
+                println!("⏹️ [LIVE] Recording stopped. Master Performance Timeline saved.");
             }
         }
     }

@@ -14,6 +14,7 @@ pub mod cloud;
 pub mod agents; 
 pub mod live;
 pub mod intelligence;
+pub mod enterprise;
 
 use std::{env, net::SocketAddr, sync::Arc};
 

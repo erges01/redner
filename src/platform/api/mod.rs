@@ -9,3 +9,5 @@ pub use runtime::RuntimeApi;
 pub use creator::CreatorApi;
 pub use blueprint::BlueprintApi;
 pub use editor::EditorApi;
+// Keep your existing exports, just add:
+pub mod ecosystem;

@@ -4,3 +4,6 @@ pub mod audio;
 pub mod motion;
 pub mod performance;
 pub mod assistant;
+pub mod twin;
+pub mod assembly;
+pub mod workflow; // 👈 The Master Integration Loop!
